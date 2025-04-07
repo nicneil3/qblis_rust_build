@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: qblis-node
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: qblis-node
+  template:
+    metadata:
+      labels:
+        app: qblis-node
+    spec:
+      containers:
+      - name: qblis-node
+        image: "your-dockerhub-username/qblis-node:latest"
+        ports:
+        - containerPort: 8545
+        volumeMounts:
+        - name: qblis-config
+          mountPath: /etc/qblis
+      volumes:
+        - name: qblis-config
+          configMap:
+            name: qblis-config
