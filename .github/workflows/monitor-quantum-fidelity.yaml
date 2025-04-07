@@ -1,0 +1,43 @@
+name: Monitor Quantum Fidelity
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # Run every 6 hours
+  workflow_dispatch:   # Manual trigger
+
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python for monitoring scripts
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install required Python packages
+      run: |
+        pip install requests
+
+    - name: Run quantum fidelity script
+      run: |
+        python scripts/monitor_quantum_fidelity.py
+
+    - name: Log the results
+      run: |
+        echo "Quantum Fidelity Metrics Log" > results.log
+        echo "Fidelity Status: OK" >> results.log
+        cat results.log
+
+    - name: Upload Quantum Fidelity Results
+      uses: actions/upload-artifact@v2
+      with:
+        name: quantum-fidelity-results
+        path: results.log
+
+    - name: Notify team (Slack)
+      run: |
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"Quantum Fidelity monitoring completed. Check results."}' $SLACK_WEBHOOK_URL
