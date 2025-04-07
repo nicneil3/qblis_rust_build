@@ -1,0 +1,16 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: qblis-node-ingress
+spec:
+  rules:
+    - host: qblis-node.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: qblis-node-service
+                port:
+                  number: 8545
