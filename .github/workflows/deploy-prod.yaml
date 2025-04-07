@@ -1,0 +1,41 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:   # Manual trigger for deployment
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker
+      uses: docker/setup-buildx-action@v1
+
+    - name: Log in to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build and Push Docker image
+      run: |
+        docker build -t qblis-node:latest .
+        docker tag qblis-node:latest your-dockerhub-username/qblis-node:latest
+        docker push your-dockerhub-username/qblis-node:latest
+
+    - name: Deploy to Kubernetes (Production)
+      run: |
+        kubectl apply -f k8s/deployment-prod.yaml
+        kubectl apply -f k8s/service-prod.yaml
+        kubectl apply -f k8s/ingress-prod.yaml
+        kubectl rollout restart deployment/qblis-node
+
+    - name: Notify team (Slack)
+      run: |
+        curl -X POST -H 'Content-type: application/json' --data '{"text":"Qublis node deployment to production completed successfully."}' $SLACK_WEBHOOK_URL
