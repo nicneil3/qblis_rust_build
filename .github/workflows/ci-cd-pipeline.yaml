@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Rust
+      uses: actions/setup-rust@v1
+      with:
+        rust-version: '1.54.0'
+
+    - name: Install dependencies
+      run: |
+        cargo build --release
+
+    - name: Run tests
+      run: |
+        cargo test --release
+
+    - name: Build Docker image
+      run: |
+        docker build -t qblis-node .
+
+    - name: Push Docker image to DockerHub
+      run: |
+        docker tag qblis-node your-dockerhub-username/qblis-node:latest
+        docker push your-dockerhub-username/qblis-node:latest
+
+    - name: Deploy to Kubernetes (Optional)
+      run: |
+        kubectl apply -f k8s/deployment.yaml
+        kubectl apply -f k8s/service.yaml
+        kubectl apply -f k8s/ingress.yaml
+        kubectl rollout restart deployment/qblis-node
+
+  notify:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Send Notification to Slack
+        run: |
+          curl -X POST -H 'Content-type: application/json' --data '{"text":"CI/CD Pipeline completed successfully."}' $SLACK_WEBHOOK_URL
