@@ -1,0 +1,24 @@
+contract GenesisContract {
+    entrypoint initializeGenesis() {
+        // Define initial block configuration for the blockchain
+        let genesisBlock = Block {
+            previous_hash = "0000000000000000",
+            timestamp = current_timestamp(),
+            transactions = [],
+            nonce = 0,
+            hash = "0"
+        };
+        // Set the genesis block as the first block in the chain
+        setGenesisBlock(genesisBlock);
+    }
+
+    entrypoint setGenesisBlock(block: Block) {
+        // Store genesis block in the blockchain storage
+        saveBlockToChain(block);
+    }
+
+    entrypoint saveBlockToChain(block: Block) {
+        // Logic for saving a block to the chain
+        blockchain.push(block);
+    }
+}
