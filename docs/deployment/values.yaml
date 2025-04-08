@@ -1,0 +1,2 @@
+git clone https://github.com/your-username/qblis.git
+cd qblis/charts/qblis-node-helm-chart
